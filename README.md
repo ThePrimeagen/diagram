@@ -8,4 +8,4 @@ Required installation
 * NPM -- curl https://npmjs.org/install.sh | sudo sh
 * Meteor -- curl https://install.meteor.com | /bin/sh
 * Meteorite -- sudo npm install -g meteorite
-* Routes -- mrt add routes
+* ./install.sh
