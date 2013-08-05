@@ -1,0 +1,17 @@
+{
+    "name": "Diagram",
+    "author": [
+        "Michael Paulson <michael.b.paulson@gmail.com>"
+    ],
+    "version": "0.0.1",
+    "description": "ass kicking awesome",
+    "dependencies": {
+        "grunt": ">= 0.4.0",
+        "grunt-contrib": ">= 0.2.0",
+        "grunt-contrib-copy": ">= 0.4.1",
+        "grunt-contrib-watch": ">= 0.4.1",
+        "grunt-contrib-requirejs": ">= 0.4.0",
+        "grunt-contrib-jshint": ">= 0.3.0"
+    },
+    "private": "true"
+}

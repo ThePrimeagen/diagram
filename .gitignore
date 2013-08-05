@@ -1,3 +1,8 @@
 packages
 .idea
+app/client
+app/server
+app/lib
+app/common
+node_modules/
 
