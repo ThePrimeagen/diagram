@@ -17,7 +17,7 @@ Meteor.Router.add({
     '/new_diagram': {
         as: 'new_diagram',
         to: function() {
-            Meteor.call('create_diagram', function(err, id) {
+            Meteor.call('createDiagram', function(err, id) {
                 Meteor.Router.to('/diagram/' + id);
             });
             return 'new_diagram';
