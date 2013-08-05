@@ -28,12 +28,13 @@ Meteor.Router.add({
         to: 'sign_in'
     },
     '*': function() {
-        return "not_found";
+        return 'not_found';
     }
 });
 
 Meteor.Router.filters({
     'validateDiagram': function(page) {
+        // TODO: Will require a refactor
         return page;
     },
     'checkLogin': function(page) {
@@ -48,4 +49,4 @@ Meteor.Router.filters({
 });
 
 Meteor.Router.filter('validateDiagram', {only: 'diagram'});
-Meteor.Router.filter('checkLogin', {except: ['help', 'home']});
+//Meteor.Router.filter('checkLogin', {except: ['help', 'home']});

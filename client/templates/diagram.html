@@ -1,7 +1,19 @@
 <template name='diagram'>
-    {{diagram.title}}
-    <a href='/help'>Help</a><br/>
-    Diagram<br/>
-    <a href='/new_diagram'>New Diagram</a><br/>
+    {{> diagram-header diagram}}
+    <div class='row'>
+        <div class='span4'>
+            My Control Panel
+            <a href='/help'>Help</a><br/>
+            <a href='/new_diagram'>New Diagram</a><br/>
+        </div>
+        <div class='span8'>
+            Here is my content
+        </div>
+    </div>
 </template>
 
+<template name='diagram-header'>
+    <div class='well'>
+        {{title}}
+    </div>
+</template>
