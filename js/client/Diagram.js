@@ -4,10 +4,16 @@ define([
 ], function(SVGGenerator, AssetPersistence) {
 
     var Diagram = function(configuration) {
-        var settings = $.extend({
+        this.settings = $.extend({
             renderArea: '.renderArea'
         }, configuration);
-        this._initialize(settings);
+
+        this._onClickHandler = this._onClick();
+        this._onDragStartHandler = this._onDragStart();
+        this._onDragHandler = this._onDrag();
+        this._onDragEndHandler = this._onDragEnd();
+        this.diagramId = this.settings.diagramId;
+        this._initialize();
     }
 
     Diagram.prototype = {
@@ -30,28 +36,97 @@ define([
         },
 
         /**
+         * Will dispose of the previous svg element and create a new one with new hammer events listening.
+         */
+        refresh: function(diagramId, latestAssets) {
+
+            var badIds = this._hammer.element.id !== $(this.settings.renderArea).attr('id');
+            var newDiagram = diagramId !== this.diagramId;
+
+            // If the ids are bad (new render area cause of template refresh priorities) or
+            // diagram id changes.
+            if (newDiagram || badIds) {
+
+                if (newDiagram) {
+                    // Must be set so we do not wipe out the assets
+                    this.diagramId = diagramId;
+                    this._readyCache();
+                }
+
+                this._destroyHammer();
+                this._initializeRenderArea();
+                this._initializeHammer();
+                this._readyCache();
+                this.update(latestAssets);
+            }
+        },
+
+        /**
          * Sets up the interaction events
-         * @param settings
          * @private
          */
-        _initialize: function(settings) {
-            this._renderArea = d3.select(settings.renderArea);
-            this._hammer = new Hammer($(settings.renderArea)[0], {
+        _initialize: function() {
+            this._initializeRenderArea();
+            this._initializeHammer();
+            this._readyCache();
+        },
+
+        /**
+         * Binds hammer to the event listener
+         * @private
+         */
+        _initializeHammer: function() {
+            console.log('creating');
+            this._hammer = new Hammer($(this.settings.renderArea)[0], {
                 prevent_default: true
             });
-            this._hammer.on('tap', this._onClick());
-            this._hammer.on('dragstart', this._onDragStart());
-            this._hammer.on('drag', this._onDrag());
-            this._hammer.on('dragend', this._onDragEnd());
 
+            this._hammer.on('tap', this._onClickHandler);
+            this._hammer.on('dragstart', this._onDragStartHandler);
+            this._hammer.on('drag', this._onDragHandler);
+            this._hammer.on('dragend', this._onDragEndHandler);
+        },
+
+        /**
+         * uninds hammer from the event listeners
+         * @private
+         */
+        _destroyHammer: function() {
+            console.log('destroying');
+            this._hammer.off('tap', this._onClickHandler);
+            this._hammer.off('dragstart', this._onDragStartHandler);
+            this._hammer.off('drag', this._onDragHandler);
+            this._hammer.off('dragend', this._onDragEndHandler);
+            delete this._hammer;
+        },
+
+        /**
+         * Initializes the render area and its datastructures.
+         * @private
+         */
+        _initializeRenderArea: function() {
+            console.log('initializing');
+            this._renderArea = $(this.settings.renderArea).html('');
+            this._renderArea = d3.select(this.settings.renderArea);
             this._svgArea = this._renderArea.append('svg')
                 .attr('width', '100%')
-                .attr('height', '100%')
+                .attr('height', '100%');
+        },
 
+        /**
+         * Clears the cache of the diagram (only on new diagram ids)
+         * @private
+         */
+        _readyCache: function() {
             this._svgAttributeMap = {};
             this._svgElementMap = {};
         },
 
+        /**
+         * On a click event create the selected object
+         * @returns {Function}
+         * @private
+         */
         _onClick: function() {
             var self = this;
             return function(event) {
@@ -62,6 +137,8 @@ define([
                     r: 25
                 });
                 var id = AssetPersistence.create(AssetPersistence.Types.CIRCLE, circleAttributes, Session.get('diagramId'));
+
+
                 self._addAsset(AssetPersistence.Types.CIRCLE, circleAttributes, id);
             };
         },
