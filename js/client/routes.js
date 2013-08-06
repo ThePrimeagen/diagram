@@ -21,7 +21,6 @@ Meteor.Router.add({
         as: 'new_diagram',
         to: function() {
             // Invalidate Session
-            Session.set('diagramId', null);
             Meteor.call('createDiagram', function(err, id) {
                 Meteor.Router.to('/diagram/' + id);
             });
@@ -61,3 +60,4 @@ Meteor.Router.filters({
 
 Meteor.Router.filter('validateDiagram', {only: 'diagram'});
 Meteor.Router.filter('removeDiagramId');
+

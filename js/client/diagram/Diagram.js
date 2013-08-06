@@ -1,7 +1,13 @@
 define([
-    'js/client/svg/SVGGenerator',
+    'js/client/diagram/svg/SVGGenerator',
     'js/client/data/AssetPersistence'
 ], function(SVGGenerator, AssetPersistence) {
+
+    /**
+     * The available set of model tags
+     * @type {Array}
+     */
+    var MODEL_TAGS = ['circle', 'rect'];
 
     var Diagram = function(configuration) {
         this.settings = $.extend({
@@ -30,7 +36,7 @@ define([
                     }
 
                 } else {
-                    this._addAsset(AssetPersistence.Types.CIRCLE, attributes, asset._id);
+                    this._addAsset(SVGGenerator.Types.CIRCLE, attributes, asset._id);
                 }
             }
         },
@@ -130,16 +136,20 @@ define([
         _onClick: function() {
             var self = this;
             return function(event) {
-                var xy = self._getXYFromHammerEvent(event);
-                var circleAttributes = SVGGenerator.circle({
-                    cx: xy.x,
-                    cy: xy.y,
-                    r: 25
-                });
-                var id = AssetPersistence.create(AssetPersistence.Types.CIRCLE, circleAttributes, Session.get('diagramId'));
 
-
-                self._addAsset(AssetPersistence.Types.CIRCLE, circleAttributes, id);
+                if (self._isModelClick(event)) {
+                    // TODO: 0.0.3 Selection of models
+                } else {
+                    // create a new model
+                    var xy = self._getXYFromHammerEvent(event);
+                    var circleAttributes = SVGGenerator.circle({
+                        cx: xy.x,
+                        cy: xy.y,
+                        r: 25
+                    });
+                    var id = AssetPersistence.create(SVGGenerator.Types.CIRCLE, circleAttributes, Session.get('diagramId'));
+                    self._addAsset(SVGGenerator.Types.CIRCLE, circleAttributes, id);
+                }
             };
         },
 
@@ -186,10 +196,6 @@ define([
                 var id = self._dragElement.id;
                 var attributes = self._svgAttributeMap[id];
                 var element = self._svgElementMap[id];
-
-                if (event.currentTarget instanceof SVGCircleElement) {
-                    return;
-                }
 
                 if (attributes) {
                     var xy = self._getXYFromHammerEvent(event);
@@ -259,6 +265,14 @@ define([
                 }
             }
             return true;
+        },
+        /**
+         * if the hammer event is on a model
+         * @param hammerEvent
+         * @private
+         */
+        _isModelClick: function(hammerEvent) {
+            return _.contains(MODEL_TAGS, hammerEvent.srcElement.tagName);
         }
     };
     return Diagram;

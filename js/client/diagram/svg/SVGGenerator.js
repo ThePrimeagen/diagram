@@ -1,6 +1,11 @@
 define([
 ], function() {
     var SVGGenerator = {
+        Types: {
+            CIRCLE: 'circle',
+            RECTANGLE: 'rect'
+        },
+
         /**
          * Creates a circle in the svg area
          * @param svgArea

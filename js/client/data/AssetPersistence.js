@@ -1,9 +1,7 @@
 define([], function() {
 
+    // TODO: 0.0.3 make this generalize
     var AssetPersistence = {
-        Types: {
-            CIRCLE: 'circle'
-        },
         /**
          * Takes in an svg element and type and converts it into a
          * @param type

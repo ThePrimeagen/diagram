@@ -1,5 +1,5 @@
 define([
-    'js/client/Diagram'
+    'js/client/diagram/Diagram'
 ], function(SVGDiagram) {
 
     var diagram;
@@ -13,17 +13,15 @@ define([
         return Assets.find().fetch();
     }
 
+
     Template.diagram.helpers({
-        getDiagramId: function() {
-            return Session.get('diagramId');
-        },
-
-        generation: function() {
-            return Session.get('generat');
-        },
-
         diagram: function() {
-            return Diagram.find(Session.get('diagramId')).fetch()[0];
+            var diagram = Session.get('diagram');
+            if (!diagram) {
+                diagram = getDiagram(Session.get('diagramId'));
+                Session.set('diagram', diagram);
+            }
+            return diagram;
         },
 
         /**
@@ -45,14 +43,17 @@ define([
         }
     });
 
-    Template.home.rendered = function() {
-        console.log('welcome to your home!');
-    };
-
     // Ties into the diagram template upon render.
     Template.diagramBody.rendered = function() {
         // Enforces the diagram editor to attach to the diagram when rendered
 
+        if (Session.get('forceRefresh')) {
+            // Not renedered
+            // TODO: ... Why do i hack?  Can i fix this or figure out why it happens
+            Session.set('forceRefresh', false);
+            $('#applicationArea').html(Meteor.render(Template.diagram));
+            return;
+        }
         if (!diagram) {
             diagram = new SVGDiagram({
                 diagramId: Session.get('diagramId')
@@ -68,8 +69,6 @@ define([
                 if (!id) {
                     c.stop();
                     running = false;
-
-                    //TODO: 0.0.2 clear svg data
                     return;
                 } else {
                     diagram.update(getAssets());
@@ -78,6 +77,15 @@ define([
             running = true;
         }
     };
+
+    /**
+     * Gets the diagram by id
+     * @param id
+     * @returns {*}
+     */
+    function getDiagram(id) {
+        return Diagram.find(id).fetch()[0];
+    }
 
 
     // Nothing return
