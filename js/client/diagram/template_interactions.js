@@ -1,6 +1,10 @@
 define([
-    'js/client/diagram/Diagram'
-], function(SVGDiagram) {
+    'js/client/diagram/Diagram',
+    'js/client/diagram/svg/SVGGenerator'
+], function(
+    SVGDiagram,
+    SVGGenerator
+) {
 
     var diagram;
     var running = false;
@@ -43,6 +47,59 @@ define([
         }
     });
 
+    Template.diagramShapes.helpers({
+        // TODO: 0.1.x Clearly this needs to be refactored for package injection
+        /**
+         * Available types of the shapes package.
+         * @returns {Array}
+         */
+        types: function() {
+            return [
+                {
+                    displayName: 'Circle',
+                    type: SVGGenerator.Types.CIRCLE
+                },
+                {
+                    displayName: 'Rectangle',
+                    type: SVGGenerator.Types.RECTANGLE
+                },
+                {
+                    displayName: 'Rounded Rectangle',
+                    type: SVGGenerator.Types.ROUNDED_RECTANGLE
+                }
+            ];
+        },
+
+        /**
+         * For reactive control
+         * @returns {*}
+         */
+        selectedType: function() {
+            return Session.get('selectedType');
+        },
+
+        /**
+         * If the type is selected.
+         * @param type
+         * @returns {boolean}
+         */
+        isSelected: function(type) {
+            var t = Session.get('selectedType');
+            if (!t && type === SVGDiagram.DEFAULT_TYPE) {
+                return true;
+            }
+            return t === type;
+        }
+    });
+
+    Template.diagramShapes.events({
+        'click #shapes-list li': function(event) {
+            $('#shapes-list li.active').removeClass('active');
+
+            Session.set('selectedType', event.currentTarget.id);
+        }
+    });
+
     // Ties into the diagram template upon render.
     Template.diagramBody.rendered = function() {
         // Enforces the diagram editor to attach to the diagram when rendered
@@ -69,7 +126,6 @@ define([
                 if (!id) {
                     c.stop();
                     running = false;
-                    return;
                 } else {
                     diagram.update(getAssets());
                 }

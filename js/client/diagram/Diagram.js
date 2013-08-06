@@ -8,6 +8,7 @@ define([
      * @type {Array}
      */
     var MODEL_TAGS = ['circle', 'rect'];
+    var DEFAULT_SELECTED_TYPE = SVGGenerator.Types.CIRCLE;
 
     var Diagram = function(configuration) {
         this.settings = $.extend({
@@ -21,6 +22,12 @@ define([
         this.diagramId = this.settings.diagramId;
         this._initialize();
     }
+
+    /**
+     * The default type for selected shapes.
+     * @type {*}
+     */
+    Diagram.DEFAULT_TYPE = DEFAULT_SELECTED_TYPE;
 
     Diagram.prototype = {
         update: function(assets) {
@@ -36,7 +43,7 @@ define([
                     }
 
                 } else {
-                    this._addAsset(SVGGenerator.Types.CIRCLE, attributes, asset._id);
+                    this._addAsset(asset.type, attributes, asset._id);
                 }
             }
         },
@@ -142,13 +149,34 @@ define([
                 } else {
                     // create a new model
                     var xy = self._getXYFromHammerEvent(event);
-                    var circleAttributes = SVGGenerator.circle({
-                        cx: xy.x,
-                        cy: xy.y,
-                        r: 25
-                    });
-                    var id = AssetPersistence.create(SVGGenerator.Types.CIRCLE, circleAttributes, Session.get('diagramId'));
-                    self._addAsset(SVGGenerator.Types.CIRCLE, circleAttributes, id);
+                    var attributes, selectedType = Session.get('selectedType');
+
+                    // TODO: Refactor in 0.1.x for a smarter package
+                    if (selectedType === SVGGenerator.Types.CIRCLE) {
+                        attributes = SVGGenerator.circle({
+                            cx: xy.x,
+                            cy: xy.y,
+                            r: 25
+                        });
+                    } else if (selectedType === SVGGenerator.Types.RECTANGLE) {
+                        attributes = SVGGenerator.rect({
+                            x: xy.x - 25,
+                            y: xy.y - 25,
+                            width: 50,
+                            height: 50
+                        });
+                    } else if (selectedType === SVGGenerator.Types.ROUNDED_RECTANGLE) {
+                        attributes = SVGGenerator.rect({
+                            x: xy.x - 25,
+                            y: xy.y - 25,
+                            width: 50,
+                            height: 50,
+                            rx: 7,
+                            ry: 7
+                        });
+                    }
+                    var id = AssetPersistence.create(selectedType, attributes, Session.get('diagramId'));
+                    self._addAsset(selectedType, attributes, id);
                 }
             };
         },
@@ -161,10 +189,18 @@ define([
          * @private
          */
         _addAsset: function(type, attributes, id) {
-            var circle = this._mapAttributes(this._svgArea.append('circle'), attributes);
-            circle.attr('id', id);
+            // TODO: 0.1.x We should have a smarter system here.  This will get completely out of hand
+            var obj;
+
+            if (type === SVGGenerator.Types.CIRCLE) {
+                obj = this._mapAttributes(this._svgArea.append('circle'), attributes);
+                obj.attr('id', id);
+            } else if (type === SVGGenerator.Types.RECTANGLE || type === SVGGenerator.Types.ROUNDED_RECTANGLE) {
+                obj = this._mapAttributes(this._svgArea.append('rect'), attributes);
+                obj.attr('id', id);
+            }
             this._svgAttributeMap[id] = attributes;
-            this._svgElementMap[id] = circle;
+            this._svgElementMap[id] = obj;
         },
 
         /**
@@ -195,15 +231,21 @@ define([
             return function(event) {
                 var id = self._dragElement.id;
                 var attributes = self._svgAttributeMap[id];
-                var element = self._svgElementMap[id];
+                var d3Element = self._svgElementMap[id];
 
                 if (attributes) {
                     var xy = self._getXYFromHammerEvent(event);
 
-                    attributes.cx = xy.x;
-                    attributes.cy = xy.y;
+                    // TODO: 0.1.x Another clear area of refactoring
+                    if (d3Element.filter('circle')[0].length > 0) {
+                        attributes.cx = xy.x;
+                        attributes.cy = xy.y;
+                    } else if (d3Element.filter('rect')[0].length > 0) {
+                        attributes.x = xy.x - attributes.width / 2;
+                        attributes.y = xy.y - attributes.height / 2;
+                    }
 
-                    self._mapAttributes(element, attributes);
+                    self._mapAttributes(d3Element, attributes);
                     AssetPersistence.update(id, {model: attributes});
                 }
             };

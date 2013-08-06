@@ -3,7 +3,8 @@ define([
     var SVGGenerator = {
         Types: {
             CIRCLE: 'circle',
-            RECTANGLE: 'rect'
+            RECTANGLE: 'rect',
+            ROUNDED_RECTANGLE: 'rrect'
         },
 
         /**
@@ -15,11 +16,29 @@ define([
             return $.extend({
                 cy: 1,
                 cx: 1,
-                r: 1,
+                r: 1
+            }, this._coreStyles(), configuration);
+        },
+
+        /**
+         * Creates the attributes of an svg element
+         * @param configuration
+         */
+        rect: function(configuration) {
+            return $.extend({
+                x: 1,
+                y: 1,
+                width: 1,
+                height: 1
+            }, this._coreStyles(), configuration);
+        },
+
+        _coreStyles: function() {
+            return {
                 stroke: 'black',
                 'stroke-width': 2,
                 fill: 'white'
-            }, configuration);
+            };
         }
     };
 
