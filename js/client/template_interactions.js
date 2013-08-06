@@ -1,6 +1,8 @@
 define([
 ], function() {
 
+    var diagram;
+    var running = false;
 
     Template.diagram.helpers({
         diagram: function() {
@@ -29,6 +31,31 @@ define([
             return Assets.find().fetch();
         }
     });
+
+
+    // Ties into the diagram template upon render.
+    Template.diagram.rendered = function() {
+        // Enforces the diagram editor to attach to the diagram when rendered
+        if (!diagram) {
+            diagram = new Diagram();
+        }
+
+        if (!running) {
+            Meteor.autorun(function(c) {
+                var id = Session.get('diagramId');
+
+                if (!id) {
+                    c.stop();
+                    running = false;
+                    return;
+                } else {
+                    diagram.update(Assets.find().fetch());
+                }
+            });
+            running = true;
+        }
+    };
+
 
     // Nothing return
     return {};
