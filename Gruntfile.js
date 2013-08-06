@@ -9,12 +9,6 @@ module.exports = function(grunt) {
         out: './app/client/main.js',
         optimize: 'none'
     };
-    var serverOptions = {
-        name: './js/server/__load',
-        baseUrl: './',
-        out: './app/server/main.js',
-        optimize: 'none'
-    };
     var commonOptions = {
         name: './js/common/__load',
         baseUrl: './',
@@ -35,7 +29,7 @@ module.exports = function(grunt) {
                 files: [
                     './js/server/**/*.js'
                 ],
-                tasks: ['requirejs:server_dev']
+                tasks: ['copy:server_dev']
             },
             common_dev: {
                 files: [
@@ -47,9 +41,6 @@ module.exports = function(grunt) {
         requirejs: {
             client_dev: {
                 options: clientOptions
-            },
-            server_dev: {
-                options: serverOptions
             },
             common_dev: {
                 options: commonOptions
@@ -75,6 +66,16 @@ module.exports = function(grunt) {
                         flatten: true,
                         src: ['./js/lib/*.js'],
                         dest: './app/lib/'
+                    }
+                ]
+            },
+            server_dev: {
+                files: [
+                    {
+                        expand: true,
+                        flatten: true,
+                        src: ['./js/server/*.js'],
+                        dest: './app/server/'
                     }
                 ]
             }

@@ -12,5 +12,17 @@ define([
         if (!diagram) {
             diagram = new Diagram();
         }
+
+        Meteor.autorun(function(c) {
+            var id = Session.get('diagramId');
+
+            if (!id) {
+                c.stop();
+                return;
+            } else {
+                diagram.update(Assets.find().fetch());
+            }
+        });
     };
+
 });

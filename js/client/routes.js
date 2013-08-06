@@ -23,30 +23,20 @@ Meteor.Router.add({
             return 'new_diagram';
         }
     },
-    '/sign_in': {
-        as: 'sign_in',
-        to: 'sign_in'
-    },
     '*': function() {
         return 'not_found';
     }
 });
 
 Meteor.Router.filters({
-    'validateDiagram': function(page) {
+    validateDiagram: function(page) {
         // TODO: Will require a refactor
         return page;
     },
-    'checkLogin': function(page) {
-        if (Meteor.loggingIn()) {
-            return 'loading';
-        } else if (Meteor.user()) {
-            return page;
-        } else {
-            return 'sign_in';
-        }
+    removeDiagramId: function(page) {
+        Session.set('diagramId', null);
     }
 });
 
 Meteor.Router.filter('validateDiagram', {only: 'diagram'});
-//Meteor.Router.filter('checkLogin', {except: ['help', 'home']});
+Meteor.Router.filter('removeDiagramId', {except: 'diagram'});

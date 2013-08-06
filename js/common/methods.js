@@ -12,6 +12,14 @@ Meteor.methods({
         }
     },
 
+    deleteAllAssets: function() {
+        var assets = Assets.find().fetch();
+        for (var key in assets) {
+            var a = assets[key];
+            Assets.remove(a._id);
+        }
+    },
+
     /**
      * Creates asset and returns the ID
      * @param assetType
@@ -23,5 +31,12 @@ Meteor.methods({
             type: assetType,
             data: assetData
         });
+    },
+
+    /**
+     * Should be ran regularly
+     */
+    clearUserSessions: function() {
+        // TODO: Backdoor for clearing user sessions that are over a day old
     }
 })

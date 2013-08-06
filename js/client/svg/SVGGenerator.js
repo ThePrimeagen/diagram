@@ -6,8 +6,8 @@ define([
          * @param svgArea
          * @param configuration
          */
-        circle: function(svgArea, configuration) {
-            var settings = $.extend({
+        circle: function(configuration) {
+            return $.extend({
                 cy: 1,
                 cx: 1,
                 r: 1,
@@ -15,20 +15,6 @@ define([
                 'stroke-width': 2,
                 fill: 'white'
             }, configuration);
-            return this._configure(svgArea.append('circle'), settings);
-        },
-
-        /**
-         * Configures the model with the settings
-         * @param model
-         * @param settings
-         * @private
-         */
-        _configure: function(model, settings) {
-            for (var key in settings) {
-                model.attr(key, settings[key]);
-            }
-            return model;
         }
     };
 
