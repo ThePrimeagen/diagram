@@ -1,5 +1,7 @@
 <template name='diagram'>
-    {{> diagram-header diagram}}
+    <div class='well'>
+        {{> diagramHeader diagram}}
+    </div>
     <!-- TODO: Refactor this into style sheets / better stuff -->
     <div style='position:absolute;top:75px;left:0;right:0;bottom:0'>
         <div style='position:relative;width:100%;height:100%'>
@@ -9,14 +11,16 @@
                 <a href='/new_diagram'>New Diagram</a><br/>
             </div>
             <div style='position:absolute;left:10%;top:0;bottom:0;width:90%'>
-                <div id='{{timestamp}}' style='width:100%;height:100%'class='renderArea'></div>
+                {{> diagramBody}}
             </div>
         </div>
     </div>
 </template>
 
-<template name='diagram-header'>
-    <div class='well'>
-        Title: {{title}}
-    </div>
+<template name='diagramHeader'>
+    Title: {{title}}
+</template>
+
+<template name='diagramBody'>
+    <div id='{{timestamp}}' style='width:100%;height:100%'class='renderArea'></div>
 </template>

@@ -32,8 +32,10 @@ define([
          */
         assets: function() {
             return getAssets();
-        },
+        }
+    });
 
+    Template.diagramBody.helpers({
         /**
          * A timestamp for the renderArea
          * @returns {number}
@@ -47,17 +49,10 @@ define([
         console.log('welcome to your home!');
     };
 
-
     // Ties into the diagram template upon render.
-    Template.diagram.rendered = function() {
+    Template.diagramBody.rendered = function() {
         // Enforces the diagram editor to attach to the diagram when rendered
 
-        if (Session.get('forceRefresh')) {
-            // Not renedered
-            // TODO: ... Why do i hack?  Can i fix this or figure out why it happens
-            Session.set('forceRefresh', false);
-            $('#applicationArea').html(Meteor.render(Template.diagram));
-        }
         if (!diagram) {
             diagram = new SVGDiagram({
                 diagramId: Session.get('diagramId')
