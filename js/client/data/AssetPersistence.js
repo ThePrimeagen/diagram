@@ -1,7 +1,9 @@
 define([], function() {
 
     // TODO: 0.0.3 make this generalize
-    var AssetPersistence = {
+    var AssetPersistence = function() {
+    };
+    AssetPersistence.prototype = {
         /**
          * Takes in an svg element and type and converts it into a
          * @param type
@@ -28,5 +30,5 @@ define([], function() {
         }
     };
 
-    return AssetPersistence;
+    return new AssetPersistence();
 });

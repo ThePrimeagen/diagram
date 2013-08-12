@@ -37,6 +37,13 @@ define([
         }
     });
 
+    /**
+     * Gets the app version for the header
+     */
+    Template.diagramHeader.helpers({
+        version: AppDiagram.version
+    });
+
     Template.diagramBody.helpers({
         /**
          * A timestamp for the renderArea

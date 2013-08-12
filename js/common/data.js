@@ -26,3 +26,11 @@ Assets.allow({
         return true;
     }
 });
+
+/**
+ * A static namespace for app level information
+ * @type {{version: string}}
+ */
+AppDiagram = {
+    version: '0.0.2'
+}

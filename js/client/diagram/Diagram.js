@@ -1,7 +1,10 @@
 define([
     'js/client/diagram/svg/SVGGenerator',
-    'js/client/data/AssetPersistence'
-], function(SVGGenerator, AssetPersistence) {
+    'js/client/diagram/svg/SVGFactory'
+], function(
+    SVGGenerator,
+    SVGFactory
+) {
 
     /**
      * The available set of model tags
@@ -18,8 +21,14 @@ define([
         this._onClickHandler = this._onClick();
         this._onDragStartHandler = this._onDragStart();
         this._onDragHandler = this._onDrag();
-        this._onDragEndHandler = this._onDragEnd();
         this.diagramId = this.settings.diagramId;
+
+        /**
+         * @type {{}}
+         * @private
+         */
+        this._svgModelMap = {};
+
         this._initialize();
     }
 
@@ -32,18 +41,20 @@ define([
     Diagram.prototype = {
         update: function(assets) {
             for (var k in assets) {
-                // TODO: Easy win is search for ids and only update changes
                 var asset = assets[k];
                 var attributes = asset.model;
-                var foundAssetAttributes = this._svgAttributeMap[asset._id];
+                var svgModel = this._svgModelMap[asset._id];
 
-                if (foundAssetAttributes) {
-                    if (!this._isModelSame(foundAssetAttributes, attributes)) {
-                        this._updateAsset(attributes, asset._id);
+                // TODO: RxJS, filter instead on live data streams, not just simple updating
+                if (svgModel) {
+                    if (!this._isModelSame(svgModel.attributes, attributes)) {
+                        svgModel.setAttributes(attributes);
                     }
 
                 } else {
-                    this._addAsset(asset.type, attributes, asset._id);
+
+                    var model = SVGFactory.createFromAttributes(asset.type, this._svgArea, attributes, asset._id);
+                    this._svgModelMap[asset._id] = model;
                 }
             }
         },
@@ -97,7 +108,6 @@ define([
             this._hammer.on('tap', this._onClickHandler);
             this._hammer.on('dragstart', this._onDragStartHandler);
             this._hammer.on('drag', this._onDragHandler);
-            this._hammer.on('dragend', this._onDragEndHandler);
         },
 
         /**
@@ -109,7 +119,6 @@ define([
             this._hammer.off('tap', this._onClickHandler);
             this._hammer.off('dragstart', this._onDragStartHandler);
             this._hammer.off('drag', this._onDragHandler);
-            this._hammer.off('dragend', this._onDragEndHandler);
             delete this._hammer;
         },
 
@@ -131,8 +140,7 @@ define([
          * @private
          */
         _readyCache: function() {
-            this._svgAttributeMap = {};
-            this._svgElementMap = {};
+            this._svgModelMap = {};
         },
 
         /**
@@ -145,73 +153,19 @@ define([
             return function(event) {
 
                 if (self._isModelClick(event)) {
-                    // TODO: 0.0.3 Selection of models
+                    // TODO: 0.0.4 Selection of models
                 } else {
                     // create a new model
                     var xy = self._getXYFromHammerEvent(event);
-                    var attributes, selectedType = Session.get('selectedType');
-
-                    // TODO: Refactor in 0.1.x for a smarter package
-                    if (selectedType === SVGGenerator.Types.CIRCLE) {
-                        attributes = SVGGenerator.circle({
-                            cx: xy.x,
-                            cy: xy.y,
-                            r: 25
-                        });
-                    } else if (selectedType === SVGGenerator.Types.RECTANGLE) {
-                        attributes = SVGGenerator.rect({
-                            x: xy.x - 25,
-                            y: xy.y - 25,
-                            width: 50,
-                            height: 50
-                        });
-                    } else if (selectedType === SVGGenerator.Types.ROUNDED_RECTANGLE) {
-                        attributes = SVGGenerator.rect({
-                            x: xy.x - 25,
-                            y: xy.y - 25,
-                            width: 50,
-                            height: 50,
-                            rx: 7,
-                            ry: 7
-                        });
-                    }
-                    var id = AssetPersistence.create(selectedType, attributes, Session.get('diagramId'));
-                    self._addAsset(selectedType, attributes, id);
+                    var model = SVGFactory.create(
+                        Session.get('selectedType'),
+                        self._svgArea,
+                        xy,
+                        Session.get('diagramId')
+                    );
+                    self._svgModelMap[model.id] = model;
                 }
             };
-        },
-
-        /**
-         * Adds the asset to the asset graph
-         * @param type
-         * @param attributes
-         * @param id
-         * @private
-         */
-        _addAsset: function(type, attributes, id) {
-            // TODO: 0.1.x We should have a smarter system here.  This will get completely out of hand
-            var obj;
-
-            if (type === SVGGenerator.Types.CIRCLE) {
-                obj = this._mapAttributes(this._svgArea.append('circle'), attributes);
-                obj.attr('id', id);
-            } else if (type === SVGGenerator.Types.RECTANGLE || type === SVGGenerator.Types.ROUNDED_RECTANGLE) {
-                obj = this._mapAttributes(this._svgArea.append('rect'), attributes);
-                obj.attr('id', id);
-            }
-            this._svgAttributeMap[id] = attributes;
-            this._svgElementMap[id] = obj;
-        },
-
-        /**
-         * Updates the asset and sets the attributes
-         * @param attributes
-         * @param id
-         * @private
-         */
-        _updateAsset: function(attributes, id) {
-            this._svgAttributeMap[id] = attributes;
-            this._mapAttributes(this._svgElementMap[id], attributes);
         },
 
         _onDragStart: function() {
@@ -230,43 +184,15 @@ define([
             var self = this;
             return function(event) {
                 var id = self._dragElement.id;
-                var attributes = self._svgAttributeMap[id];
-                var d3Element = self._svgElementMap[id];
+                var svgModel = self._svgModelMap[id];
 
-                if (attributes) {
+                if (svgModel) {
                     var xy = self._getXYFromHammerEvent(event);
-
-                    // TODO: 0.1.x Another clear area of refactoring
-                    if (d3Element.filter('circle')[0].length > 0) {
-                        attributes.cx = xy.x;
-                        attributes.cy = xy.y;
-                    } else if (d3Element.filter('rect')[0].length > 0) {
-                        attributes.x = xy.x - attributes.width / 2;
-                        attributes.y = xy.y - attributes.height / 2;
-                    }
-
-                    self._mapAttributes(d3Element, attributes);
-                    AssetPersistence.update(id, {model: attributes});
+                    svgModel.update(xy);
                 }
             };
         },
 
-        /**
-         * On a drag end event, the element will finally persistence it self
-         * @returns {Function}
-         * @private
-         */
-        _onDragEnd: function() {
-            var self = this;
-            return function(event) {
-                var id = self._dragElement.id;
-                var attributes = self._svgAttributeMap[id];
-
-                if (attributes) {
-                    AssetPersistence.update(id, {model: attributes});
-                }
-            };
-        },
         /**
          * Gets the xy from hammer event
          * @param event
@@ -283,24 +209,13 @@ define([
         },
 
         /**
-         * Maps the attributes to the model
-         * @param model
-         * @param attributes
-         * @private
-         */
-        _mapAttributes: function(model, attributes) {
-            for (var k in attributes) {
-                model.attr(k, attributes[k]);
-            }
-            return model;
-        },
-        /**
          * Compares two models
          * @param {{}} a
          * @param {{}} b
          * @private
          */
         _isModelSame: function(a, b) {
+            // TODO: Change to a "Change Set"
             for (var k in a) {
                 if (b[k] !== a[k]) {
                     return false;
