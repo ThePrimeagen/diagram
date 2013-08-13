@@ -1,11 +1,13 @@
 define([
     'js/client/data/AssetPersistence',
     'js/client/diagram/svg/SVGGenerator',
-    'js/client/diagram/svg/SVGCircle'
+    'js/client/diagram/svg/SVGCircle',
+    'js/client/diagram/svg/SVGRect'
 ], function(
     AssetPersistence,
     SVGGenerator,
-    SVGCircle
+    SVGCircle,
+    SVGRect
 ) {
     var SVGModelFactory = {};
 
@@ -14,7 +16,7 @@ define([
      * @param type
      * @param svg
      * @param [options]
-     * @returns {js.client.diagram.svg.SVGCircle}
+     * @returns {SVGCircle|SVGRect}
      */
     function createModel(type, svg, options) {
         var settings = $.extend({
@@ -42,21 +44,23 @@ define([
                 attributes: attributes,
                 id: settings.id
             });
-        } else if (type === SVGGenerator.Types.RECTANGLE) {
-            attributes = SVGGenerator.rect({
-                x: position.x - 25,
-                y: position.y - 25,
-                width: 50,
-                height: 50
-            });
-        } else if (type === SVGGenerator.Types.ROUNDED_RECTANGLE) {
-            attributes = SVGGenerator.rect({
-                x: position.x - 25,
-                y: position.y - 25,
-                width: 50,
-                height: 50,
-                rx: 7,
-                ry: 7
+        } else if (type === SVGGenerator.Types.RECTANGLE || type === SVGGenerator.Types.ROUNDED_RECTANGLE) {
+            if (settings.attributes) {
+                attributes = SVGGenerator.rect(settings.attributes);
+            } else {
+                attributes = SVGGenerator.rect({
+                    x: settings.position.x - 25,
+                    y: settings.position.y - 25,
+                    width: 50,
+                    height: 50
+                });
+            }
+
+            return new SVGRect({
+                svg: svg,
+                attributes: attributes,
+                id: settings.id,
+                rounded: type === SVGGenerator.Types.ROUNDED_RECTANGLE
             });
         }
     }
@@ -67,13 +71,12 @@ define([
      * @param svg
      * @param position
      * @param diagramId
-     * @returns {js.client.diagram.svg.SVGCircle}
+     * @returns {SVGRect|SVGCircle}
      */
     SVGModelFactory.create = function(type, svg, position, diagramId) {
         var model = createModel(type, svg, {position: position});
         var id = AssetPersistence.create(type, model.attributes, diagramId);
         model.id = id;
-
         return model;
     };
 
@@ -83,7 +86,7 @@ define([
      * @param svg
      * @param attributes
      * @param id
-     * @returns {js.client.diagram.svg.SVGCircle}
+     * @returns {SVGRect|SVGCircle}
      */
     SVGModelFactory.createFromAttributes = function(type, svg, attributes, id) {
         return createModel(type, svg, {attributes: attributes, id: id});
