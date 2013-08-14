@@ -5,6 +5,7 @@ define([
     SVGModel,
     SVGGenerator
 ) {
+    var DEFAULT_SELECT_RECT_COLOR = '#39aecf';
 
     var SVGSelectableModel = function() {};
     SVGSelectableModel.prototype = new SVGModel();
@@ -18,7 +19,7 @@ define([
             this._currentBoundingBox = this._getBoundingBox();
             var config = _.clone(this._currentBoundingBox);
             config['fill-opacity'] = 0;
-            config.stroke = '#ddd';
+            config.stroke = DEFAULT_SELECT_RECT_COLOR;
 
             var attributes = SVGGenerator.rect(config);
 

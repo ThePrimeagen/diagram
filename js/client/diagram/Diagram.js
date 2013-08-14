@@ -199,6 +199,9 @@ define([
                 if (self._dragElement) {
                     var svgModel = self._getSelectedModel(self._dragElement);
                     if (svgModel) {
+                        if (self._selectedModel && self._selectedModel.id !== svgModel.id) {
+                            self._unselectModel();
+                        }
                         var xy = self._getXYFromHammerEvent(event);
                         svgModel.translate(xy);
                     }

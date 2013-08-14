@@ -32,5 +32,5 @@ Assets.allow({
  * @type {{version: string}}
  */
 AppDiagram = {
-    version: '0.0.2a'
+    version: '0.0.3'
 }
