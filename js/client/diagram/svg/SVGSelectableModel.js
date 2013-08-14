@@ -14,7 +14,7 @@ define([
      */
     SVGSelectableModel.prototype.drawSelectBox = function() {
 
-        if (!this._selecting) {
+        if (!this._selected) {
             this._currentBoundingBox = this._getBoundingBox();
             var config = _.clone(this._currentBoundingBox);
             config['fill-opacity'] = 0;
@@ -24,9 +24,9 @@ define([
 
             // Builds the select model on top of the current model.
             this._selectionRect = this.svg.append('rect');
-            this._selectionRect.attr('id', this.id);
+            this._selectionRect.attr('id', 'rect-' + this.id);
             this._mapAttributes(this._selectionRect, attributes);
-            this._selecting = true;
+            this._selected = true;
         }
     };
 
@@ -36,7 +36,7 @@ define([
      */
     SVGSelectableModel.prototype._translateSelection = function(position) {
 
-        if (this._selecting) {
+        if (this._selected) {
             var attributes = {
                 x: position.x - this._currentBoundingBox.width / 2,
                 y: position.y - this._currentBoundingBox.height / 2
@@ -50,7 +50,7 @@ define([
      * current model.
      */
     SVGSelectableModel.prototype.unselect = function() {
-        this._selecting = false;
+        this._selected = false;
         this._currentBoundingBox = null;
         this._selectionRect.remove();
         this._selectionRect = null;
@@ -69,6 +69,14 @@ define([
      */
     SVGSelectableModel.prototype._getBoundingBox = function() {
         throw new Error('Not Implemented Exception: SVGSelectableModelMixin#_getBoundingBox');
+    };
+
+    /**
+     * if the current model is selected.
+     * @returns {Boolean}
+     */
+    SVGSelectableModel.prototype.isSelected = function() {
+        return this._selected;
     };
 
     return SVGSelectableModel;

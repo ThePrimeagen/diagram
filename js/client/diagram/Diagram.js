@@ -150,18 +150,22 @@ define([
          */
         _onClick: function() {
             var self = this;
+
+            // TODO: I wonder how this could be refactor
             return function(event) {
                 var model;
                 if (self._isModelClick(event)) {
-                    self._selectedModel = self._svgModelMap[event.srcElement.id];
+                    if (self._selectedModel) {
+                        self._unselectModel();
+                    }
+                    self._selectedModel = self._getSelectedModel(event.srcElement);
                     if (self._selectedModel) {
                         self._selectedModel.click();
                     }
                 } else {
 
                     if (self._selectedModel) {
-                        self._selectedModel.unselect();
-                        self._selectedModel = false;
+                        self._unselectModel();
                     } else {
                         // create a new model
                         var xy = self._getXYFromHammerEvent(event);
@@ -192,12 +196,12 @@ define([
         _onDrag: function() {
             var self = this;
             return function(event) {
-                var id = self._dragElement.id;
-                var svgModel = self._svgModelMap[id];
-
-                if (svgModel) {
-                    var xy = self._getXYFromHammerEvent(event);
-                    svgModel.translate(xy);
+                if (self._dragElement) {
+                    var svgModel = self._getSelectedModel(self._dragElement);
+                    if (svgModel) {
+                        var xy = self._getXYFromHammerEvent(event);
+                        svgModel.translate(xy);
+                    }
                 }
             };
         },
@@ -232,6 +236,7 @@ define([
             }
             return true;
         },
+
         /**
          * if the hammer event is on a model
          * @param hammerEvent
@@ -239,6 +244,31 @@ define([
          */
         _isModelClick: function(hammerEvent) {
             return _.contains(MODEL_TAGS, hammerEvent.srcElement.tagName);
+        },
+
+        /**
+         * Unselects the model
+         * @private
+         */
+        _unselectModel: function() {
+            this._selectedModel.unselect();
+            this._selectedModel = false;
+        },
+
+        /**
+         * Takes the event and gets the selected model.
+         * @param {HTMLElement} sourceElement
+         * @private
+         */
+        _getSelectedModel: function(sourceElement) {
+
+            var id = sourceElement.id;
+            if (id.indexOf('rect-') >= 0 &&
+                this._svgModelMap[sourceElement.id.substring(5)]) {
+                id = sourceElement.id.substring(5);
+            }
+
+            return this._svgModelMap[id];
         }
     };
     return Diagram;
