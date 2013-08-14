@@ -11,11 +11,9 @@ define([
         },
         /**
          * Updates the x and y and possible whatever other options provided.
-         * @param {Number} x
-         * @param {Number} y
-         * @param {{}} [options]
+         * @param {{x: Number, y: Number}} position
          */
-        update: function(x, y, options) {
+        translate: function(position) {
             throw new Error('NotSupported: #update');
         },
         remove: function() {

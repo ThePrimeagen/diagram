@@ -1,8 +1,8 @@
 define([
-    'js/client/diagram/svg/SVGModelMixin',
+    'js/client/diagram/svg/SVGSelectableModel',
     'js/client/data/AssetPersistence'
 ], function(
-    SVGModelMixin,
+    SVGSelectableModel,
     AssetPersistence
 ) {
 
@@ -56,30 +56,48 @@ define([
         this._initialize(configuration.id);
     };
 
-    SVGCircle.prototype = new SVGModelMixin();
+    SVGCircle.prototype = new SVGSelectableModel();
 
     /**
      * If the circle has been clicked
      */
     SVGCircle.prototype.click = function() {
-        // selection?
+
+        // Draws the selection box
+        this.drawSelectBox();
     };
 
     /**
      * Updates the position of the circle and radius if passed in
      * @param {{x: Number, y: Number}} position
-     * @param {Mixed} [options]
      */
-    SVGCircle.prototype.update = function(position, options) {
-        var attributes = $.extend({
+    SVGCircle.prototype.translate = function(position) {
+        // TODO: Better way to call super?
+        this._translateSelection(position);
+        var attributes = {
             cx: position.x,
             cy: position.y
-        }, options);
+        };
 
         this._updateAttributes(this.attributes, attributes);
         this._mapAttributes(this.svgModel, attributes);
         AssetPersistence.update(this.id, {model: this.attributes});
-    }
+    };
+
+    /**
+     * Gets the current bounding box for the circle.
+     * @private
+     */
+    SVGCircle.prototype._getBoundingBox = function() {
+        var radius = this.attributes.r;
+        var r2 = radius * 2;
+        return {
+            x: this.attributes.cx - radius - 2,
+            y: this.attributes.cy - radius - 2,
+            width: r2 + 4,
+            height: r2 + 4
+        };
+    };
 
     return SVGCircle;
 });

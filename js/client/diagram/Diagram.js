@@ -151,21 +151,30 @@ define([
         _onClick: function() {
             var self = this;
             return function(event) {
-
+                var model;
                 if (self._isModelClick(event)) {
-                    // TODO: 0.0.4 Selection of models
+                    self._selectedModel = self._svgModelMap[event.srcElement.id];
+                    if (self._selectedModel) {
+                        self._selectedModel.click();
+                    }
                 } else {
-                    // create a new model
-                    var xy = self._getXYFromHammerEvent(event);
-                    var model = SVGFactory.create(
-                        Session.get('selectedType'),
-                        self._svgArea,
-                        xy,
-                        Session.get('diagramId')
-                    );
-                    self._svgModelMap[model.id] = model;
+
+                    if (self._selectedModel) {
+                        self._selectedModel.unselect();
+                        self._selectedModel = false;
+                    } else {
+                        // create a new model
+                        var xy = self._getXYFromHammerEvent(event);
+                        model = SVGFactory.create(
+                            Session.get('selectedType'),
+                            self._svgArea,
+                            xy,
+                            Session.get('diagramId')
+                        );
+                        self._svgModelMap[model.id] = model;
+                    }
                 }
-            };
+            }; // return
         },
 
         _onDragStart: function() {
@@ -188,7 +197,7 @@ define([
 
                 if (svgModel) {
                     var xy = self._getXYFromHammerEvent(event);
-                    svgModel.update(xy);
+                    svgModel.translate(xy);
                 }
             };
         },
@@ -215,7 +224,7 @@ define([
          * @private
          */
         _isModelSame: function(a, b) {
-            // TODO: Change to a "Change Set"
+            // TODO: Return a change set so that its more efficient!
             for (var k in a) {
                 if (b[k] !== a[k]) {
                     return false;
