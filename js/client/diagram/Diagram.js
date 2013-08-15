@@ -21,6 +21,7 @@ define([
         this._onClickHandler = this._onClick();
         this._onDragStartHandler = this._onDragStart();
         this._onDragHandler = this._onDrag();
+        this._onTouchHandler = this._onTouch();
         this.diagramId = this.settings.diagramId;
 
         /**
@@ -108,6 +109,7 @@ define([
             this._hammer.on('tap', this._onClickHandler);
             this._hammer.on('dragstart', this._onDragStartHandler);
             this._hammer.on('drag', this._onDragHandler);
+            this._hammer.on('touch', this._onTouchHandler);
         },
 
         /**
@@ -119,6 +121,7 @@ define([
             this._hammer.off('tap', this._onClickHandler);
             this._hammer.off('dragstart', this._onDragStartHandler);
             this._hammer.off('drag', this._onDragHandler);
+            this._hammer.off('touch', this._onTouchHandler);
             delete this._hammer;
         },
 
@@ -184,7 +187,7 @@ define([
         _onDragStart: function() {
             var self = this;
             return function(event) {
-                self._dragElement = event.srcElement;
+                // TODO: Needed?
             };
         },
 
@@ -206,6 +209,17 @@ define([
                         svgModel.translate(xy);
                     }
                 }
+            };
+        },
+
+        /**
+         * On initial touch, this is for selecting the source element
+         * @private
+         */
+        _onTouch: function() {
+            var self = this;
+            return function(event) {
+                self._dragElement = event.srcElement;
             };
         },
 
@@ -266,9 +280,10 @@ define([
         _getSelectedModel: function(sourceElement) {
 
             var id = sourceElement.id;
-            if (id.indexOf('rect-') >= 0 &&
-                this._svgModelMap[sourceElement.id.substring(5)]) {
-                id = sourceElement.id.substring(5);
+            console.log('Selecting id: ' + id);
+            if (id.indexOf('-') >= 0) {
+                var idSplit = id.split('-');
+                id = idSplit[1];
             }
 
             return this._svgModelMap[id];

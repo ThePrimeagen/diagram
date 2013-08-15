@@ -6,6 +6,43 @@ define([
     SVGGenerator
 ) {
     var DEFAULT_SELECT_RECT_COLOR = '#39aecf';
+    var DEFAULT_SELECT_HANDLE_RECT_COLOR = '#555';
+    var DEFAULT_SELECT_HANDLE_RECT_FILL_COLOR = '#EFEFEF';
+    var DEFAULT_SELECT_HANDLE_SIZE = 10;
+
+    /**
+     * Will take the bounding box and create selection handles around it
+     * @param boundingBox
+     * @returns {Array.<Object>}
+     */
+    function selectHandles(boundingBox) {
+        var miniBox = {
+            x: 0, y: 0,
+            width: DEFAULT_SELECT_HANDLE_SIZE, height: DEFAULT_SELECT_HANDLE_SIZE,
+            fill: DEFAULT_SELECT_HANDLE_RECT_FILL_COLOR,
+            stroke: DEFAULT_SELECT_HANDLE_RECT_COLOR,
+            'stroke-width': 1,
+            rx: 3,
+            ry: 3
+        };
+        var x = boundingBox.x - DEFAULT_SELECT_HANDLE_SIZE / 2;
+        var y = boundingBox.y - DEFAULT_SELECT_HANDLE_SIZE / 2;
+        var w = boundingBox.width;
+        var h = boundingBox.height;
+        var attrs = SVGGenerator.rect(miniBox);
+
+        // Returns the list of attributes augmented with their position
+        return [
+            'tl', $.extend(_.clone(attrs), {x: x, y: y}),
+            'tr', $.extend(_.clone(attrs), {x: x + w, y: y}),
+            'tm', $.extend(_.clone(attrs), {x: x + w / 2, y: y}),
+            'bl', $.extend(_.clone(attrs), {x: x, y: y + h}),
+            'br', $.extend(_.clone(attrs), {x: x + w, y: y + h}),
+            'bm', $.extend(_.clone(attrs), {x: x + w / 2, y: y + h}),
+            'lm', $.extend(_.clone(attrs), {x: x, y: y + h / 2}),
+            'rm', $.extend(_.clone(attrs), {x: x + w, y: y + h / 2}),
+        ];
+    }
 
     var SVGSelectableModel = function() {};
     SVGSelectableModel.prototype = new SVGModel();
@@ -28,6 +65,15 @@ define([
             this._selectionRect.attr('id', 'rect-' + this.id);
             this._mapAttributes(this._selectionRect, attributes);
             this._selected = true;
+
+            // Maps over the handles to the selection rectangle.
+            var handleAttrs = selectHandles(this._currentBoundingBox);
+            this._selectionHandles = [];
+            for (var i = 0, len = handleAttrs.length; i < len; i += 2) {
+                var handle = this.svg.append('rect').attr('id', handleAttrs[i] + '-' + this.id);
+                this._mapAttributes(handle, handleAttrs[i + 1]);
+                this._selectionHandles.push(handle);
+            }
         }
     };
 
@@ -38,11 +84,23 @@ define([
     SVGSelectableModel.prototype._translateSelection = function(position) {
 
         if (this._selected) {
+            var selectBoxX = position.x - this._currentBoundingBox.width / 2;
+            var selectBoxY = position.y - this._currentBoundingBox.height / 2;
+            var xDelta = this._selectionRect.attr('x') - selectBoxX;
+            var yDelta = this._selectionRect.attr('y') - selectBoxY;
+
             var attributes = {
-                x: position.x - this._currentBoundingBox.width / 2,
-                y: position.y - this._currentBoundingBox.height / 2
+                x: selectBoxX,
+                y: selectBoxY
             };
             this._mapAttributes(this._selectionRect, attributes);
+
+            // Moves the handles with it
+            for (var i = 0, len = this._selectionHandles.length; i < len; i++) {
+                var x = this._selectionHandles[i].attr('x');
+                var y = this._selectionHandles[i].attr('y');
+                this._mapAttributes(this._selectionHandles[i], {x: x - xDelta, y: y - yDelta});
+            }
         }
     };
 
@@ -55,6 +113,11 @@ define([
         this._currentBoundingBox = null;
         this._selectionRect.remove();
         this._selectionRect = null;
+
+        for (var i = 0, len = this._selectionHandles.length; i < len; i++) {
+            this._selectionHandles[i].remove();
+        }
+        this._selectionHandles = null;
     };
 
     /**
@@ -78,6 +141,14 @@ define([
      */
     SVGSelectableModel.prototype.isSelected = function() {
         return this._selected;
+    };
+
+    /**
+     * If the event is on the selection handle.  If it is then we need to do a resizing, not a translation
+     * @param event
+     */
+    SVGSelectableModel.prototype.eventOnSelectionHandle = function(event) {
+        // TODO: Resizing
     };
 
     return SVGSelectableModel;

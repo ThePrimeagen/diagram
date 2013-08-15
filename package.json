@@ -12,6 +12,7 @@
         "grunt-contrib-watch": ">= 0.4.1",
         "grunt-contrib-requirejs": ">= 0.4.0",
         "grunt-contrib-jshint": ">= 0.3.0",
+        "grunt-typescript": ">= 0.2.3",
         "rxjs-gestures": ">= 0.0.9"
     },
     "private": "true"
