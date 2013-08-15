@@ -80,10 +80,18 @@ define([
     /**
      * Will translate the selection box to where the model is at.
      * @param {{x: Number, y: Number}} position
+     * @param {Event} event
      */
-    SVGSelectableModel.prototype._translateSelection = function(position) {
+    SVGSelectableModel.prototype.translate = function(position, event) {
 
         if (this._selected) {
+
+            // If the drag needs to be a scale.  It only happens when a selection handle has been grabbed
+            if (this._onSelectionHandle(event)) {
+                this.scale(position, event);
+                return;
+            }
+
             var selectBoxX = position.x - this._currentBoundingBox.width / 2;
             var selectBoxY = position.y - this._currentBoundingBox.height / 2;
             var xDelta = this._selectionRect.attr('x') - selectBoxX;
@@ -102,6 +110,43 @@ define([
                 this._mapAttributes(this._selectionHandles[i], {x: x - xDelta, y: y - yDelta});
             }
         }
+    };
+
+    /**
+     * Performs a scale on the selectable model.
+     * @param {{x: Number, y: Number}} position
+     * @param {Event} event
+     */
+    SVGSelectableModel.prototype.scale = function(position, event) {
+        // 1: Calculate scale
+        // 2: scale inner object
+        // 3: Scale selection handles
+
+        // 1
+        var scale = 1;
+
+        // 2
+        this._scale(scale);
+
+        // 3
+    };
+
+    /**
+     * Must be implemented so that the inner model knows how to translate itself.
+     * @param {Any} position
+     * @private
+     */
+    SVGSelectableModel.prototype._translate = function(position) {
+        throw new Error('NotImplementedException: SVGSelectableModel#_translate');
+    };
+
+    /**
+     * Must be implemented so that the inner model knows how to scale itself.
+     * @param {Any} position
+     * @private
+     */
+    SVGSelectableModel.prototype._scale = function(scale) {
+        throw new Error('NotImplementedException: SVGSelectableModel#_scale');
     };
 
     /**
@@ -144,12 +189,11 @@ define([
     };
 
     /**
-     * If the event is on the selection handle.  If it is then we need to do a resizing, not a translation
-     * @param event
+     * If the event is on a selection handle
+     * @private
      */
-    SVGSelectableModel.prototype.eventOnSelectionHandle = function(event) {
-        // TODO: Resizing
-    };
+    SVGSelectableModel.prototype._onSelectionHandle = function(event) {
 
+    };
     return SVGSelectableModel;
 });
