@@ -69,9 +69,7 @@ define([
      * Updates the position of the circle and radius if passed in
      * @param {{x: Number, y: Number}} position
      */
-    SVGRect.prototype.translate = function(position) {
-        // TODO: Better way to call super?
-        this._translateSelection(position);
+    SVGRect.prototype._translate = function(position) {
         var attributes = {
             x: position.x - this.attributes.width / 2,
             y: position.y - this.attributes.height / 2

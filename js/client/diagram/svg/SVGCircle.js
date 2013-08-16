@@ -70,10 +70,10 @@ define([
     /**
      * Updates the position of the circle and radius if passed in
      * @param {{x: Number, y: Number}} position
+     * @param {HTMLElement} srcElement
+     * @param {Event} event
      */
-    SVGCircle.prototype.translate = function(position) {
-        // TODO: Better way to call super?
-        this._translateSelection(position);
+    SVGCircle.prototype._translate = function(position, srcElement, event) {
         var attributes = {
             cx: position.x,
             cy: position.y

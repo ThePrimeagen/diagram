@@ -9,6 +9,7 @@ define([
     var DEFAULT_SELECT_HANDLE_RECT_COLOR = '#555';
     var DEFAULT_SELECT_HANDLE_RECT_FILL_COLOR = '#EFEFEF';
     var DEFAULT_SELECT_HANDLE_SIZE = 10;
+    var HANDLE_NAMES = ['tl', 'tr', 'tm', 'bl', 'br', 'bm', 'lm', 'rm'];
 
     /**
      * Will take the bounding box and create selection handles around it
@@ -48,6 +49,17 @@ define([
     SVGSelectableModel.prototype = new SVGModel();
 
     /**
+     * Initializes the selectable model.
+     * @param {String} id
+     * @private
+     */
+    SVGSelectableModel.prototype._initialize = function(id) {
+        this._scale = 1;
+        this._handles = {};
+        SVGModel.prototype._initialize.apply(this, [id]);
+    };
+
+    /**
      * Draws the select box around the model.
      */
     SVGSelectableModel.prototype.drawSelectBox = function() {
@@ -70,9 +82,11 @@ define([
             var handleAttrs = selectHandles(this._currentBoundingBox);
             this._selectionHandles = [];
             for (var i = 0, len = handleAttrs.length; i < len; i += 2) {
-                var handle = this.svg.append('rect').attr('id', handleAttrs[i] + '-' + this.id);
+                var id = handleAttrs[i] + '-' + this.id;
+                var handle = this.svg.append('rect').attr(id);
                 this._mapAttributes(handle, handleAttrs[i + 1]);
                 this._selectionHandles.push(handle);
+                this._handles[id] = handle;
             }
         }
     };
@@ -80,15 +94,16 @@ define([
     /**
      * Will translate the selection box to where the model is at.
      * @param {{x: Number, y: Number}} position
+     * @param {HTMLElement} srcElement
      * @param {Event} event
      */
-    SVGSelectableModel.prototype.translate = function(position, event) {
+    SVGSelectableModel.prototype.translate = function(position, srcElement, event) {
 
         if (this._selected) {
 
             // If the drag needs to be a scale.  It only happens when a selection handle has been grabbed
-            if (this._onSelectionHandle(event)) {
-                this.scale(position, event);
+            if (this._onSelectionHandle(srcElement)) {
+                this.scale(position, srcElement, event);
                 return;
             }
 
@@ -110,19 +125,24 @@ define([
                 this._mapAttributes(this._selectionHandles[i], {x: x - xDelta, y: y - yDelta});
             }
         }
+
+        // Translate the child object
+        this._translate(position, event);
     };
 
     /**
      * Performs a scale on the selectable model.
      * @param {{x: Number, y: Number}} position
+     * @param {HTMLElement} srcElement
      * @param {Event} event
      */
-    SVGSelectableModel.prototype.scale = function(position, event) {
+    SVGSelectableModel.prototype.scale = function(position, srcElement, event) {
         // 1: Calculate scale
         // 2: scale inner object
         // 3: Scale selection handles
 
         // 1
+        var handle = this._handles[event.srcElement.id];
         var scale = 1;
 
         // 2
@@ -190,10 +210,13 @@ define([
 
     /**
      * If the event is on a selection handle
+     * @params {HTMLElement} srcElement
+     * @returns {Boolean}
      * @private
      */
-    SVGSelectableModel.prototype._onSelectionHandle = function(event) {
-
+    SVGSelectableModel.prototype._onSelectionHandle = function(srcElement) {
+        var id = srcElement.id;
+        return id.indexOf('-') >= 0 && _.contains(HANDLE_NAMES, id.split('-')[0]);
     };
     return SVGSelectableModel;
 });

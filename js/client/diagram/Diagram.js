@@ -206,7 +206,7 @@ define([
                             self._unselectModel();
                         }
                         var xy = self._getXYFromHammerEvent(event);
-                        svgModel.translate(xy);
+                        svgModel.translate(xy, self._dragElement, event);
                     }
                 }
             };
