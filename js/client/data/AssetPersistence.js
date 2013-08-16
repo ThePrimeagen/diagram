@@ -17,7 +17,7 @@ define([], function() {
                 model: model
             };
 
-            return Assets.insert(data);
+            return DiagramAssets.insert(data);
         },
 
         /**
@@ -26,7 +26,7 @@ define([], function() {
          * @param attributes
          */
         update: function(id, attributes) {
-            Assets.update(id, {$set: attributes});
+            DiagramAssets.update(id, {$set: attributes});
         }
     };
 

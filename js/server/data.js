@@ -4,6 +4,6 @@ Meteor.publish('diagram', function() {
 });
 
 Meteor.publish('assets', function(diagramId) {
-    console.log("Assets: " + diagramId);
-    return Assets.find({diagramId: diagramId});
+    console.log("DiagramAssets: " + diagramId);
+    return DiagramAssets.find({diagramId: diagramId});
 });

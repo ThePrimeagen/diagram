@@ -1,6 +1,6 @@
 // Models
 Diagram = new Meteor.Collection('Diagram');
-Assets = new Meteor.Collection('Assets');
+DiagramAssets = new Meteor.Collection('DiagramAssets');
 
 // Allowed transfers
 Diagram.allow({
@@ -15,7 +15,7 @@ Diagram.allow({
     }
 });
 
-Assets.allow({
+DiagramAssets.allow({
     insert: function(userId, diagram) {
         return true;
     },

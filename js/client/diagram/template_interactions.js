@@ -14,7 +14,7 @@ define([
      * @returns {*}
      */
     function getAssets() {
-        return Assets.find().fetch();
+        return DiagramAssets.find().fetch();
     }
 
 

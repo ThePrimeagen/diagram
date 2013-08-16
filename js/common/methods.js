@@ -13,10 +13,10 @@ Meteor.methods({
     },
 
     deleteAllAssets: function() {
-        var assets = Assets.find().fetch();
+        var assets = DiagramAssets.find().fetch();
         for (var key in assets) {
             var a = assets[key];
-            Assets.remove(a._id);
+            DiagramAssets.remove(a._id);
         }
     },
 
@@ -26,7 +26,7 @@ Meteor.methods({
      * @param assetData
      */
     createAsset: function(assetType, assetData, diagramId) {
-        return Assets.insert({
+        return DiagramAssets.insert({
             diagramId: diagramId,
             type: assetType,
             data: assetData
