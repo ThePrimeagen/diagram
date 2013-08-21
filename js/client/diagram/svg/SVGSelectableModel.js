@@ -83,7 +83,7 @@ define([
             this._selectionHandles = [];
             for (var i = 0, len = handleAttrs.length; i < len; i += 2) {
                 var id = handleAttrs[i] + '-' + this.id;
-                var handle = this.svg.append('rect').attr(id);
+                var handle = this.svg.append('rect').attr('id', id);
                 this._mapAttributes(handle, handleAttrs[i + 1]);
                 this._selectionHandles.push(handle);
                 this._handles[id] = handle;
