@@ -3,7 +3,7 @@ Meteor.publish('diagram', function() {
     return Diagram.find({});
 });
 
-Meteor.publish('assets', function(diagramId) {
+Meteor.publish('diagramAssets', function(diagramId) {
     console.log("DiagramAssets: " + diagramId);
     return DiagramAssets.find({diagramId: diagramId});
 });
