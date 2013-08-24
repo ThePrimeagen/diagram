@@ -14,7 +14,7 @@ define([
     /**
      * Will take the bounding box and create selection handles around it
      * @param boundingBox
-     * @returns {Array.<Object>}
+     * @returns {{}}
      */
     function selectHandles(boundingBox) {
         var miniBox = {
@@ -33,16 +33,16 @@ define([
         var attrs = SVGGenerator.rect(miniBox);
 
         // Returns the list of attributes augmented with their position
-        return [
-            'tl', $.extend(_.clone(attrs), {x: x, y: y}),
-            'tr', $.extend(_.clone(attrs), {x: x + w, y: y}),
-            'tm', $.extend(_.clone(attrs), {x: x + w / 2, y: y}),
-            'bl', $.extend(_.clone(attrs), {x: x, y: y + h}),
-            'br', $.extend(_.clone(attrs), {x: x + w, y: y + h}),
-            'bm', $.extend(_.clone(attrs), {x: x + w / 2, y: y + h}),
-            'lm', $.extend(_.clone(attrs), {x: x, y: y + h / 2}),
-            'rm', $.extend(_.clone(attrs), {x: x + w, y: y + h / 2}),
-        ];
+        return {
+            'tl': $.extend(_.clone(attrs), {x: x, y: y}),
+            'tr': $.extend(_.clone(attrs), {x: x + w, y: y}),
+            'tm': $.extend(_.clone(attrs), {x: x + w / 2, y: y}),
+            'bl': $.extend(_.clone(attrs), {x: x, y: y + h}),
+            'br': $.extend(_.clone(attrs), {x: x + w, y: y + h}),
+            'bm': $.extend(_.clone(attrs), {x: x + w / 2, y: y + h}),
+            'lm': $.extend(_.clone(attrs), {x: x, y: y + h / 2}),
+            'rm': $.extend(_.clone(attrs), {x: x + w, y: y + h / 2})
+        };
     }
 
     /**
@@ -54,8 +54,30 @@ define([
      */
     function calculateScale(centerPoint, handle, eventPosition, attr) {
 
-        var xDelta = handle.attr(attr) - position[attr];
-        var distDelta = Math.sqrt(xDelta * xDelta + yDelta * yDelta);
+        var attrDelta = handle.attr(attr) - eventPosition[attr];
+        var handleCenterDist = centerPoint[attr] - handle.attr(attr);
+
+        return 1 + (attrDelta / handleCenterDist);
+    }
+
+    /**
+     * Checks to see if the handle identifier is an "X" locked scaler (the two side scales)
+     * @param handleIdentifier
+     * @returns {boolean}
+     */
+    function isXLockedScale(handleIdentifier) {
+        return handleIdentifier.indexOf('m') >= 0 &&
+            (handleIdentifier.indexOf('l') >= 0 || handleIdentifier.indexOf('r') >= 0);
+    }
+
+    /**
+     * Checks to see if the handle identifier is an "Y" locked scaler (the top/bottom middle handles)
+     * @param handleIdentifier
+     * @returns {boolean}
+     */
+    function isYLockedScale(handleIdentifier) {
+        return handleIdentifier.indexOf('m') >= 0 &&
+            (handleIdentifier.indexOf('t') >= 0 || handleIdentifier.indexOf('b') >= 0);
     }
 
     var SVGSelectableModel = function() {};
@@ -67,7 +89,7 @@ define([
      * @private
      */
     SVGSelectableModel.prototype._initialize = function(id) {
-        this._modelScale = 1;
+        this._modelScale = [1, 1];
         this._handles = {};
         SVGModel.prototype._initialize.apply(this, [id]);
     };
@@ -94,10 +116,10 @@ define([
             // Maps over the handles to the selection rectangle.
             var handleAttrs = selectHandles(this._currentBoundingBox);
             this._selectionHandles = [];
-            for (var i = 0, len = handleAttrs.length; i < len; i += 2) {
-                var id = handleAttrs[i] + '-' + this.id;
+            for (var key in handleAttrs) {
+                var id = key + '-' + this.id;
                 var handle = this.svg.append('rect').attr('id', id);
-                this._mapAttributes(handle, handleAttrs[i + 1]);
+                this._mapAttributes(handle, handleAttrs[key]);
                 this._selectionHandles.push(handle);
                 this._handles[id] = handle;
             }
@@ -152,13 +174,24 @@ define([
         // 3: Scale selection handles
 
         // 1
-        var handle = this._handles[event.srcElement.id];
-        var centerPoint = this.getCenterPoint();
-        var xDist = handle.attr('x') - centerPoint.x;
-        var yDist = handle.attr('y') - centerPoint.y;
-        var scale = distDelta / Math.sqrt(xDist * xDist + yDist * yDist);
 
-        this._modelScale += scale;
+        var handleIdentifier = srcElement.id.split('-');
+        var handle = this._handles[srcElement.id];
+        var centerPoint = this.getCenterPoint();
+
+        var xScale = this._modelScale[0];
+        var yScale = this._modelScale[1];
+
+        if (isXLockedScale(handleIdentifier)) {
+            xScale += calculateScale(centerPoint, handle, position, 'x');
+        } else if (isYLockedScale(handleIdentifier)) {
+            yScale += calculateScale(centerPoint, handle, position, 'y');
+        } else {
+            xScale += calculateScale(centerPoint, handle, position, 'x');
+            yScale += calculateScale(centerPoint, handle, position, 'y');
+        }
+        this._modelScale[0] = xScale;
+        this._modelScale[1] = yScale;
 
         // 2
         this._scale(this._modelScale);
