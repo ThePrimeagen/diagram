@@ -20,14 +20,15 @@ define([
          * @type {string}
          * @private
          */
-        this._type = 'circle';
+        this._type = 'ellipse';
 
         /**
          * The available set of attributes
          * @type {{
          *     cx: Number,
          *     cy: Number,
-         *     r: Number,
+         *     rx: Number,
+         *     ry: Number,
          *     stroke: String,
          *     stroke-width: Number,
          *     fill: String
@@ -36,7 +37,8 @@ define([
         this.attributes = $.extend({
             cx: 0,
             cy: 0,
-            r: 0,
+            rx: 0,
+            ry: 0,
             stroke: 'black',
             'stroke-width': 2,
             fill: 'white'
@@ -73,8 +75,8 @@ define([
      */
     SVGCircle.prototype.getCenterPoint = function() {
         return {
-            x: this.svgModel.attr('x'),
-            y: this.svgModel.attr('y')
+            x: this.svgModel.attr('cx'),
+            y: this.svgModel.attr('cy')
         };
     };
 
@@ -100,14 +102,27 @@ define([
      * @private
      */
     SVGCircle.prototype._getBoundingBox = function() {
-        var radius = this.attributes.r;
-        var r2 = radius * 2;
+        var rx = this.attributes.rx;
+        var ry = this.attributes.ry;
+        var rx2 = rx * 2;
+        var ry2 = rx * 2;
         return {
-            x: this.attributes.cx - radius - 2,
-            y: this.attributes.cy - radius - 2,
-            width: r2 + 4,
-            height: r2 + 4
+            x: this.attributes.cx - rx - 2,
+            y: this.attributes.cy - ry - 2,
+            width: rx2 + 4,
+            height: rx2 + 4
         };
+    };
+
+    /**
+     *
+     * @param position
+     * @param srcElement
+     * @param event
+     * @private
+     */
+    SVGCircle.prototype._scale = function(position, srcElement, event) {
+
     };
 
     return SVGCircle;

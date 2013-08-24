@@ -10,7 +10,7 @@ define([
      * The available set of model tags
      * @type {Array}
      */
-    var MODEL_TAGS = ['circle', 'rect'];
+    var MODEL_TAGS = ['ellipse', 'rect'];
     var DEFAULT_SELECTED_TYPE = SVGGenerator.Types.CIRCLE;
 
     var Diagram = function(configuration) {

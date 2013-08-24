@@ -16,7 +16,8 @@ define([
             return $.extend({
                 cy: 1,
                 cx: 1,
-                r: 1
+                rx: 1,
+                ry: 1
             }, this._coreStyles(), configuration);
         },
 

@@ -35,7 +35,8 @@ define([
                 attributes = SVGGenerator.circle({
                     cx: settings.position.x,
                     cy: settings.position.y,
-                    r: 25
+                    rx: 25,
+                    ry: 25
                 });
             }
 

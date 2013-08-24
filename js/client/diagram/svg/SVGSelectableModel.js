@@ -57,7 +57,7 @@ define([
         var attrDelta = handle.attr(attr) - eventPosition[attr];
         var handleCenterDist = centerPoint[attr] - handle.attr(attr);
 
-        return 1 + (attrDelta / handleCenterDist);
+        return attrDelta / handleCenterDist;
     }
 
     /**
