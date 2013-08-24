@@ -45,6 +45,19 @@ define([
         ];
     }
 
+    /**
+     * Calculates the scale
+     * @param {{x:Number,y:Number}} centerPoint
+     * @param {{Object}} handle
+     * @param {{x:Number,y:Number}} eventPosition
+     * @param {String} attr  The Attribute to use to scale.  Either 'x' or 'y' is allowed
+     */
+    function calculateScale(centerPoint, handle, eventPosition, attr) {
+
+        var xDelta = handle.attr(attr) - position[attr];
+        var distDelta = Math.sqrt(xDelta * xDelta + yDelta * yDelta);
+    }
+
     var SVGSelectableModel = function() {};
     SVGSelectableModel.prototype = new SVGModel();
 
@@ -54,7 +67,7 @@ define([
      * @private
      */
     SVGSelectableModel.prototype._initialize = function(id) {
-        this._scale = 1;
+        this._modelScale = 1;
         this._handles = {};
         SVGModel.prototype._initialize.apply(this, [id]);
     };
@@ -111,11 +124,8 @@ define([
             var selectBoxY = position.y - this._currentBoundingBox.height / 2;
             var xDelta = this._selectionRect.attr('x') - selectBoxX;
             var yDelta = this._selectionRect.attr('y') - selectBoxY;
+            var attributes = {x: selectBoxX, y: selectBoxY};
 
-            var attributes = {
-                x: selectBoxX,
-                y: selectBoxY
-            };
             this._mapAttributes(this._selectionRect, attributes);
 
             // Moves the handles with it
@@ -143,12 +153,18 @@ define([
 
         // 1
         var handle = this._handles[event.srcElement.id];
-        var scale = 1;
+        var centerPoint = this.getCenterPoint();
+        var xDist = handle.attr('x') - centerPoint.x;
+        var yDist = handle.attr('y') - centerPoint.y;
+        var scale = distDelta / Math.sqrt(xDist * xDist + yDist * yDist);
+
+        this._modelScale += scale;
 
         // 2
-        this._scale(scale);
+        this._scale(this._modelScale);
 
         // 3
+
     };
 
     /**

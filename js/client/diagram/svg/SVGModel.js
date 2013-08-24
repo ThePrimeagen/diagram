@@ -10,6 +10,13 @@ define([
             throw new Error('NotSupported: #click');
         },
         /**
+         * Gets the center point from the model
+         * @return {{x:Number, y:Number}}
+         */
+        getCenterPoint: function() {
+            throw new Error('NotSupported: SVGModelMixin#getCenterPoint');
+        },
+        /**
          * Updates the x and y and possible whatever other options provided.
          * @param {{x: Number, y: Number}} position
          */

@@ -68,6 +68,17 @@ define([
     };
 
     /**
+     * Gets the center point
+     * @returns {{x: Number, y: Number}}
+     */
+    SVGCircle.prototype.getCenterPoint = function() {
+        return {
+            x: this.svgModel.attr('x'),
+            y: this.svgModel.attr('y')
+        };
+    };
+
+    /**
      * Updates the position of the circle and radius if passed in
      * @param {{x: Number, y: Number}} position
      * @param {HTMLElement} srcElement
