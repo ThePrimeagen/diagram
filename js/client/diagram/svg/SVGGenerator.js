@@ -2,7 +2,7 @@ define([
 ], function() {
     var SVGGenerator = {
         Types: {
-            CIRCLE: 'circle',
+            CIRCLE: 'ellipse',
             RECTANGLE: 'rect',
             ROUNDED_RECTANGLE: 'rrect'
         },
