@@ -1,3 +1,4 @@
+
 Meteor.methods({
     createDiagram: function() {
         return Diagram.insert({title: 'Undefined Title'});
